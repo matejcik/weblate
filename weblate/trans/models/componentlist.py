@@ -21,7 +21,6 @@
 """Components list."""
 
 from django.db import models
-from django.core.exceptions import ValidationError
 from django.utils.encoding import python_2_unicode_compatible
 from django.utils.translation import ugettext_lazy as _
 
@@ -47,10 +46,6 @@ class ComponentList(models.Model):
 
     def tab_slug(self):
         return "list-" + self.slug
-
-    def clean(self):
-        if not self.name:
-            raise ValidationError(_('Name must be specified'))
 
     def __str__(self):
         return self.name

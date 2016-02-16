@@ -23,9 +23,9 @@ Tests for translation views.
 """
 
 from xml.dom import minidom
+from io import BytesIO
 
 from six.moves.urllib.parse import urlsplit
-from six import StringIO
 
 from PIL import Image
 
@@ -183,7 +183,7 @@ class ViewTestCase(RepoTestCase):
     def assertPNGData(self, content):
         """Checks whether data is PNG image"""
         # Try to load PNG with PIL
-        image = Image.open(StringIO(content))
+        image = Image.open(BytesIO(content))
         self.assertEqual(image.format, 'PNG')
 
     def assertSVG(self, response):
@@ -401,8 +401,8 @@ class HomeViewTest(ViewTestCase):
         self.assertNotContains(response, 'whiteboard')
 
     def test_component_list(self):
-        cl = ComponentList(name="TestCL", slug="testcl")
-        cl.save()
+        clist = ComponentList(name="TestCL", slug="testcl")
+        clist.save()
 
         response = self.client.get(reverse('home'))
         self.assertContains(response, 'TestCL')
