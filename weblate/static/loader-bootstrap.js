@@ -524,7 +524,10 @@ $(function () {
         }
     } else if ($('.translation-tabs').length > 0 && Cookies.get('translate-tab')) {
         /* From cookie */
-        activeTab = $('[data-toggle=tab][href="' + Cookies.get('translate-tab') + '"]');
+        /* TODO instead of this workaround, redisplay search results */
+        var tab_name = Cookies.get('translate-tab');
+        if (tab_name == "#search-results") tab_name = "#search";
+        activeTab = $('[data-toggle=tab][href="' + tab_name + '"]');
         if (activeTab.length) {
             activeTab.tab('show');
         }
@@ -941,5 +944,17 @@ $(function () {
       $("#views-title").html($(this).text()+' <span class="caret"></span>');
     });
 
-
+    /* Search in translation page */
+    $("#translate-search-form").submit(function(e) {
+        e.preventDefault();
+        console.log("prevented default");
+        var data = $(this).serialize();
+        console.log(data);
+        $("#search-results-switch").show().find("a").tab('show');
+        var tab = $("#search-results");
+        console.log(tab.data());
+        $.get(tab.data('action'), data, function(html) {
+            tab.html(html);
+        });
+    });
 });

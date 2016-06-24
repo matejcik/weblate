@@ -654,6 +654,11 @@ urlpatterns = [
         weblate.trans.views.edit.save_zen,
         name='save_zen',
     ),
+    url(
+        r'^js/search/(?P<unit_id>[0-9]+)/$',
+        weblate.trans.views.js.get_search_results,
+        name='js-search-results',
+    ),
 
     # Admin interface
     url(r'^admin/doc/', include('django.contrib.admindocs.urls')),

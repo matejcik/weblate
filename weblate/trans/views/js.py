@@ -23,10 +23,12 @@ from django.http import (
     HttpResponse, HttpResponseBadRequest, Http404, JsonResponse,
 )
 from django.core.exceptions import PermissionDenied
+from django.contrib import messages
 from django.utils.encoding import force_text
 
 from weblate.trans.models import Unit, Check, Change
 from weblate.trans.machine import MACHINE_TRANSLATION_SERVICES
+from weblate.trans.views.edit import search
 from weblate.trans.views.helper import (
     get_project, get_subproject, get_translation
 )
@@ -254,5 +256,32 @@ def get_detail(request, project, subproject, checksum):
             ),
             'extra_flags': extra_flags,
             'check_flags': check_flags,
+        }
+    )
+
+
+def get_search_results(request, unit_id):
+    '''
+    Renders search results for in-page display.
+    '''
+    unit = get_object_or_404(Unit, pk=int(unit_id))
+    search_result = search(unit.translation, request)
+
+    errors = []
+
+    # Handle redirects
+    if isinstance(search_result, HttpResponse):
+        # clear out set messages
+        errors = list(messages.get_messages(request))
+        units = []
+    else:
+        units = unit.translation.unit_set.filter(id__in=search_result['ids'])
+
+    return render(
+        request,
+        'js/search-results.html',
+        {
+            'units': units,
+            'errors': errors,
         }
     )

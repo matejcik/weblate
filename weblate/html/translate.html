@@ -162,6 +162,7 @@
 <li><a href="#machine" data-toggle="tab" data-load="mt" title="{% trans "Machine translation suggestions" %}">{% trans "Machine translation" %}</a></li>
 {% endif %}
 <li><a href="#search" data-toggle="tab">{% trans "Search" %}</a></li>
+<li style="display: none" id="search-results-switch"><a href="#search-results" data-toggle="tab">{% trans "Search results" %}</a></li>
 <li><a href="#history" data-toggle="tab" data-href="{% url 'js-unit-changes' unit_id=unit.id %}" title="{% trans "List of recent changes done in Weblate" %}">{% trans "History" %}</a></li>
 </ul>
 
@@ -248,10 +249,14 @@
 {% endif %}
 
 <div class="tab-pane" id="search">
-<form action="{{ unit.translation.get_translate_url }}" method="GET">
+<form action="{{ unit.translation.get_translate_url }}" method="GET" id="translate-search-form">
 {{ search_form|crispy }}
 <input type="submit" value="{% trans "Search" %}" class="btn btn-default" />
 </form>
+</div>
+
+<div class="tab-pane" id="search-results" data-action="{% url 'js-search-results' unit_id=unit.id %}">
+<p><i class="fa fa-spinner fa-spin"></i> {% trans "Loading…" %}</p>
 </div>
 
 <div class="tab-pane" id="history">
