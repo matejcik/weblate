@@ -828,6 +828,14 @@ $(function () {
                 return gettext('There are some unsaved changes, are you sure you want to leave?');
             }
         });
+    } else if ($('.translation-editor').length > 0) {
+        /* set changes mode on translation-editor */
+        var origContent = $('.translation-editor').val();
+        $window.on('beforeunload', function(){
+            if ($('.translation-editor').val() != origContent) {
+                return gettext('There are some unsaved changes, are you sure you want to leave?');
+            }
+        });
     };
 
     /* Social auth disconnect */
