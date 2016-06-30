@@ -951,7 +951,7 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
         )
 
         # Translations with suggestions
-        self.suggested_words = self.unit_set.filter(
+        suggested_words = self.unit_set.filter(
             has_suggestion=True
         ).aggregate(
             Sum('num_words')
@@ -962,7 +962,7 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
             _('Strings with suggestions'),
             self.have_suggestion,
             'info',
-            self.suggested_words,
+            suggested_words,
         )
 
         # All checks
