@@ -25,7 +25,7 @@ import traceback
 import multiprocessing
 
 from django.db import models
-from django.db.models import Q
+from django.db.models import Count, Q, Sum
 from django.utils.translation import ugettext as _
 from django.utils.encoding import python_2_unicode_compatible
 from django.contrib import messages
@@ -56,6 +56,10 @@ SIMPLE_FILTERS = {
     'translated': {'translated': True},
     'suggestions': {'has_suggestion': True},
     'comments': {'has_comment': True},
+    'clean': {
+        'translated': True, 'has_suggestion': False, 'fuzzy': False,
+        'has_failing_check': False
+    },
 }
 
 SEARCH_FILTERS = ('source', 'target', 'context', 'location', 'comment')
@@ -154,6 +158,8 @@ class UnitManager(models.Manager):
         """
         if rqtype in SIMPLE_FILTERS:
             return self.filter(**SIMPLE_FILTERS[rqtype])
+        elif rqtype == 'dirty':
+            return self.filter(~Q(**SIMPLE_FILTERS['clean']))
         elif rqtype == 'sourcecomments':
             coms = Comment.objects.filter(
                 language=None,
@@ -185,7 +191,13 @@ class UnitManager(models.Manager):
             return ret
 
         # Actually count units
-        ret = self.filter_type(rqtype, translation).count()
+        ret = self.filter_type(rqtype, translation).aggregate(
+            Count('id'),
+            Sum('num_words'),
+        )
+        count = ret['id__count']
+        wordcount = ret['num_words__sum']
+        ret = (count, wordcount)
 
         # Update cache
         cache.set(cache_key, ret)

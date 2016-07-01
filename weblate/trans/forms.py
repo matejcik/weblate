@@ -466,6 +466,8 @@ class FilterField(forms.ChoiceField):
             ('suggestions', _('Strings with suggestions')),
             ('comments', _('Strings with comments')),
             ('allchecks', _('Strings with any failing checks')),
+            ('clean', _('Clean strings')),
+            ('dirty', _('Strings to check')),
         ] + [
             (check, CHECKS[check].description)
             for check in CHECKS if CHECKS[check].target

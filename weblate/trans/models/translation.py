@@ -875,7 +875,7 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
         result.add_if(
             'sourcechecks',
             _('Strings with any failing checks'),
-            self.unit_set.count_type('sourcechecks', self),
+            self.unit_set.count_type('sourcechecks', self)[0],
             'danger',
         )
 
@@ -887,7 +887,7 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
             result.add_if(
                 check,
                 check_obj.description,
-                self.unit_set.count_type(check, self),
+                self.unit_set.count_type(check, self)[0],
                 check_obj.severity,
             )
 
@@ -895,7 +895,7 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
         result.add_if(
             'sourcecomments',
             _('Strings with comments'),
-            self.unit_set.count_type('sourcecomments', self),
+            self.unit_set.count_type('sourcecomments', self)[0],
             'info',
         )
 
@@ -944,25 +944,21 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
         # Fuzzy strings
         result.add_if(
             'fuzzy',
-            _('Strings marked for review'),
+            _('Fuzzy strings'),
             self.fuzzy,
             'danger',
             self.fuzzy_words,
         )
 
         # Translations with suggestions
-        self.suggested_words = self.unit_set.filter(
-            has_suggestion=True
-        ).aggregate(
-            Sum('num_words')
-        )['num_words__sum']
+        suggestions, suggested_words = self.unit_set.count_type('suggestions', self)
 
         result.add_if(
             'suggestions',
             _('Strings with suggestions'),
             self.have_suggestion,
             'info',
-            self.suggested_words,
+            suggested_words,
         )
 
         # All checks
@@ -971,6 +967,7 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
             _('Strings with any failing checks'),
             self.failing_checks,
             'danger',
+            self.failing_checks_words,
         )
 
         # Process specific checks
@@ -978,11 +975,13 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
             check_obj = CHECKS[check]
             if not check_obj.target:
                 continue
+            count, wordcount = self.unit_set.count_type(check, self)
             result.add_if(
                 check,
                 check_obj.description,
-                self.unit_set.count_type(check, self),
+                count,
                 check_obj.severity,
+                wordcount,
             )
 
         # Grab comments
@@ -991,6 +990,24 @@ class Translation(models.Model, URLMixin, PercentMixin, LoggerMixin):
             _('Strings with comments'),
             self.have_comment,
             'info',
+        )
+
+        # SUSE: strings needing action
+        clean, clean_words = self.unit_set.count_type('clean', self)
+        result.add_if(
+            'clean',
+            _('Clean strings'),
+            clean,
+            'success',
+            clean_words,
+        )
+
+        result.add_if(
+            'dirty',
+            _('Strings to check'),
+            self.total - clean,
+            'danger',
+            self.total_words - clean_words,
         )
 
         return result
