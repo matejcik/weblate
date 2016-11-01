@@ -830,11 +830,16 @@ $(function () {
         });
     } else if ($('.translation-editor').length > 0) {
         /* set changes mode on translation-editor */
-        var origContent = $('.translation-editor').val();
+        var editor = $('.translation-editor');
+        editor.data('orig-content', editor.val());
         $window.on('beforeunload', function(){
-            if ($('.translation-editor').val() != origContent) {
+            if (editor.val() != editor.data('orig-content')) {
                 return gettext('There are some unsaved changes, are you sure you want to leave?');
             }
+        });
+
+        $('.translation-form').on('submit', function(){
+            editor.data('orig-content', editor.val());
         });
     };
 
